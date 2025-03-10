@@ -6,7 +6,7 @@ This is a Django-based web application with a React frontend.
 
 The project follows a standard Django application structure with a React frontend:
 
-```mermaid
+```
 server/
 ├── database/        # Database-related files
 ├── djangoapp/       # Django application folder
