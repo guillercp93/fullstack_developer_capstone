@@ -1,0 +1,84 @@
+name: 'Lint Code'
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  lint_python:
+    name: Lint Python Files
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'  # Caches pip dependencies
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 flake8-django flake8-docstrings
+
+    - name: Run Python Linter
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        echo "Python linting completed successfully"
+
+  lint_js:
+    name: Lint JavaScript Files
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'  # Caches npm dependencies
+
+    - name: Install dependencies
+      run: |
+        npm install -g jshint
+        npm install -g eslint eslint-plugin-react
+
+    - name: Run JavaScript Linter
+      run: |
+        # Run JSHint on server-side JavaScript files
+        echo "Running JSHint on server files..."
+        find ./server/database -name "*.js" -exec jshint --config .jshintrc {} +
+
+        # Run ESLint on React frontend files
+        echo "Running ESLint on frontend files..."
+        if [ -d "./frontend/src" ]; then
+          npx eslint "./frontend/src/**/*.{js,jsx}"
+        fi
+        
+        echo "JavaScript linting completed successfully"
+
+    - name: Create JSHint config if not exists
+      run: |
+        if [ ! -f ".jshintrc" ]; then
+          echo '{
+            "esversion": 8,
+            "node": true,
+            "mocha": true,
+            "strict": "global",
+            "globals": {
+              "require": false,
+              "module": false,
+              "exports": false
+            }
+          }' > .jshintrc
+        fi
