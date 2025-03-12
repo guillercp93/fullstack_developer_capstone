@@ -16,11 +16,12 @@ from django.contrib.auth import logout
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django.http.request import BadRequest
 from django.views.decorators.csrf import csrf_exempt
 
 from djangoapp.models import CarMake, CarModel
 from djangoapp.populate import initiate
-from djangoapp.restapis import get_request
+from djangoapp.restapis import analyze_review_sentiments, get_request, post_review
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -199,44 +200,115 @@ def get_dealerships(request, state="All"):
         return JsonResponse({"error": "Internal server error"}, status=500)
 
 
-def get_dealer_reviews(request, dealer_id):
+def get_dealer_details(request, dealer_id):
     """
-    Fetch reviews for a specific dealer from the backend API.
+    Fetch dealer details from the backend API.
 
-    Makes a request to the backend service to retrieve all reviews
-    associated with the given dealer ID.
+    Makes a request to the backend service to retrieve dealer information.
 
     Args:
         request: HTTP request object
-        dealer_id (str): ID of the dealer to fetch reviews for
+        dealer_id (int): ID of the dealer to fetch details for.
 
     Returns:
-        JsonResponse: JSON object containing dealer reviews
-            Success: {"status": 200, "reviews": reviews_data}
+        JsonResponse: JSON object containing status and dealer data
+            Success: {"status": 200, "dealer": dealer_data}
             Error: {"error": error_message}
     """
     try:
-        # Construct endpoint for dealer reviews
-        endpoint = f"fetchReviews/{dealer_id}"
-        
-        # Get reviews from backend
-        reviews = get_request(endpoint)
-        
-        if reviews is None:
-            logger.error(f"Failed to fetch reviews for dealer {dealer_id}")
-            return JsonResponse({"error": "Failed to fetch dealer reviews"}, status=500)
+        if dealer_id:
+            endpoint = "fetchDealer/{dealer_id}"
+            dealer = get_request(endpoint)
+            if dealer is None:
+                logger.error("Failed to get dealer from backend")
+                return JsonResponse({"error": "Failed to get dealer"}, status=500)
 
-        return JsonResponse({"status": 200, "reviews": reviews})
+            return JsonResponse({"status": 200, "dealer": dealer})
+        raise BadRequest("Dealer not found")
+    except Exception as e:
+        logger.error(f"Error in get_dealer_details: {str(e)}")
+        return JsonResponse({"error": "Internal server error"}, status=500)
 
+
+def get_dealer_reviews(request, dealer_id):
+    """
+    Fetch dealer reviews from the backend API.
+
+    Makes a request to the backend service to retrieve all reviews for a given dealer.
+    Analyzes the sentiment of each review using the sentiment analyzer service.
+
+    Args:
+        request: HTTP request object
+        dealer_id (int): ID of the dealer to fetch reviews for.
+
+    Returns:
+        JsonResponse: JSON object containing status and dealer reviews
+            Success: {"status": 200, "dealerReviews": dealer_reviews}
+            Error: {"error": error_message}
+    """
+    try:
+        if dealer_id:
+            reviews_detail = []
+            endpoint = f"/fetchReviews/dealer/{dealer_id}"
+            reviews = get_request(endpoint)
+            if reviews is None:
+                logger.error("Failed to get reviews from backend")
+                return JsonResponse({"error": "Failed to get reviews"}, status=500)
+
+            for review in reviews:
+
+                response = analyze_review_sentiments(review["review"])
+                if response is None:
+                    raise Exception("Failed to analyze review sentiment")
+
+                reviews_detail.append(
+                    {
+                        "id": review["id"],
+                        "name": review["name"],
+                        "review": review["review"],
+                        "purchase": review["purchase"],
+                        "purchase_date": review["purchase_date"],
+                        "car_make": review["car_make"],
+                        "car_model": review["car_model"],
+                        "car_year": review["car_year"],
+                        "sentiment": response["sentiment"],
+                    }
+                )
+
+            return JsonResponse({"status": 200, "reviews": reviews_detail})
+        raise BadRequest("Reviews not found")
     except Exception as e:
         logger.error(f"Error in get_dealer_reviews: {str(e)}")
         return JsonResponse({"error": "Internal server error"}, status=500)
 
 
-# Create a `get_dealer_details` view to render the dealer details
-# def get_dealer_details(request, dealer_id):
-# ...
+def add_review(request):
+    """
+    Add a review to the backend API.
 
-# Create a `add_review` view to submit a review
-# def add_review(request):
-# ...
+    This view function processes a POST request to add a review for a dealer.
+    The request should contain JSON data with review details. Only authenticated
+    users can add reviews.
+
+    Args:
+        request: HTTP request object containing user authentication and review data
+
+    Returns:
+        JsonResponse: JSON object indicating add review status
+            Success: {"status": 200, "review": response}
+            Error: {"error": error_message}
+    """
+    if request.user.is_anonymous == False:
+        data = json.loads(request.body)
+        try:
+            response = post_review("insert_review", data)
+            if response is None:
+                logger.error("Failed to add review")
+                return JsonResponse({"error": "Failed to add review"}, status=500)
+
+            return JsonResponse({"status": 200, "review": response})
+        except:
+            logger.error(f"Error in add_review: {str(e)}")
+            return JsonResponse({"error": "Internal server error"}, status=500)
+    else:
+        return JsonResponse({"error": "Unauthorized"}, status=403)

@@ -86,5 +86,15 @@ def analyze_review_sentiments(text):
         return None
 
 
-# def post_review(data_dict):
-# Add code for posting review
+def post_review(endpoint, data_dict):
+    request_url = f"{backend_url}/{endpoint}"
+    try:
+        response = requests.post(request_url, json=data_dict, timeout=10)  # Add timeout
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request failed: {str(e)}")
+        return None
+    except ValueError as e:
+        logger.error(f"Failed to parse JSON response: {str(e)}")
+        return None
