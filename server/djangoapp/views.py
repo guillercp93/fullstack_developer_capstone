@@ -217,17 +217,17 @@ def get_dealer_details(request, dealer_id):
     """
     try:
         if dealer_id:
-            endpoint = "fetchDealer/{dealer_id}"
+            endpoint = f"fetchDealer/{dealer_id}"
             dealer = get_request(endpoint)
             if dealer is None:
                 logger.error("Failed to get dealer from backend")
-                return JsonResponse({"error": "Failed to get dealer"}, status=500)
+                return JsonResponse({"error": "Failed to get dealer", "status": 500}, status=500)
 
             return JsonResponse({"status": 200, "dealer": dealer})
         raise BadRequest("Dealer not found")
     except Exception as e:
         logger.error(f"Error in get_dealer_details: {str(e)}")
-        return JsonResponse({"error": "Internal server error"}, status=500)
+        return JsonResponse({"error": "Internal server error", "status": 500}, status=500)
 
 
 def get_dealer_reviews(request, dealer_id):
@@ -253,7 +253,7 @@ def get_dealer_reviews(request, dealer_id):
             reviews = get_request(endpoint)
             if reviews is None:
                 logger.error("Failed to get reviews from backend")
-                return JsonResponse({"error": "Failed to get reviews"}, status=500)
+                return JsonResponse({"error": "Failed to get reviews", "status":500}, status=500)
 
             for review in reviews:
 
@@ -279,7 +279,7 @@ def get_dealer_reviews(request, dealer_id):
         raise BadRequest("Reviews not found")
     except Exception as e:
         logger.error(f"Error in get_dealer_reviews: {str(e)}")
-        return JsonResponse({"error": "Internal server error"}, status=500)
+        return JsonResponse({"error": "Internal server error", "status": 500}, status=500)
 
 
 def add_review(request):
@@ -304,11 +304,11 @@ def add_review(request):
             response = post_review("insert_review", data)
             if response is None:
                 logger.error("Failed to add review")
-                return JsonResponse({"error": "Failed to add review"}, status=500)
+                return JsonResponse({"error": "Failed to add review", "status": 500}, status=500)
 
             return JsonResponse({"status": 200, "review": response})
         except:
             logger.error(f"Error in add_review: {str(e)}")
-            return JsonResponse({"error": "Internal server error"}, status=500)
+            return JsonResponse({"error": "Internal server error", "status": 500}, status=500)
     else:
-        return JsonResponse({"error": "Unauthorized"}, status=403)
+        return JsonResponse({"error": "Unauthorized", "status": 403}, status=403)

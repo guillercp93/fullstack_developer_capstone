@@ -87,6 +87,23 @@ def analyze_review_sentiments(text):
 
 
 def post_review(endpoint, data_dict):
+    """
+    Sends a POST request to the specified backend API endpoint with the provided data.
+
+    Args:
+        endpoint (str): The API endpoint to which the POST request will be sent.
+        data_dict (dict): A dictionary containing the data to be sent in the request body.
+
+    Returns:
+        dict or None: A dictionary containing the JSON response from the API if the request is successful.
+                      Returns None if the request fails or the response cannot be parsed.
+
+    Example:
+        >>> post_review("insert_review", {"name": "John", "review": "Great service!"})
+        # Sends a POST request to: http://localhost:3030/insert_review
+        # Returns: {'status': 'success', 'id': 1} or None if failed
+    """
+
     request_url = f"{backend_url}/{endpoint}"
     try:
         response = requests.post(request_url, json=data_dict, timeout=10)  # Add timeout

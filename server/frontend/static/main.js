@@ -20,7 +20,7 @@ const checkSession = () => {
 
   if (curr_user && curr_user !== "") {
     document.getElementById("loginlogout").innerHTML =
-      '<span class="nav-link"><i class="fas fa-user me-1"></i>' + curr_user + '</span>' +
+      '<text class="nav-link"><i class="fas fa-user me-1"></i>' + curr_user + '</text>' +
       '<a class="nav-link" onclick="logout()" href="/"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>'
   } else {
     document.getElementById("loginlogout").innerHTML =
