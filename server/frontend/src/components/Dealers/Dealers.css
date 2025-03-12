@@ -3,14 +3,14 @@
   flex-direction: column;
   border: solid grey;
   position: relative;
-  height: 7cm;
-  width: 6cm;
-  overflow-y: scroll;
+  height: 24vh;
+  width: 17vw;
+  overflow-y: auto;
   padding: .3cm;
   padding-top: 0%;
   border-radius: 10px;
   box-shadow: 0px 1px 12px rgba(0, 0, 0, 0.5);
-  margin-bottom: .5cm;
+  margin: 0.5% !important;
   justify-content: space-between;
 }
 
