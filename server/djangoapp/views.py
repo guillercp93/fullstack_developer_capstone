@@ -307,7 +307,7 @@ def add_review(request):
                 return JsonResponse({"error": "Failed to add review", "status": 500}, status=500)
 
             return JsonResponse({"status": 200, "review": response})
-        except:
+        except Exception as e:
             logger.error(f"Error in add_review: {str(e)}")
             return JsonResponse({"error": "Internal server error", "status": 500}, status=500)
     else:
