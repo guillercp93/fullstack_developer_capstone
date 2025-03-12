@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -7,7 +7,7 @@ const cors = require('cors');
 const app = express();
 const port = 3030;
 
-app.use(cors())
+app.use(cors());
 app.use(require('body-parser').urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -28,7 +28,7 @@ try {
   });
 
 } catch (error) {
-  res.status(500).json({ error: 'Error fetching documents' });
+  console.error(error);
 }
 
 // Express route to home
