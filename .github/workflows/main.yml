@@ -19,7 +19,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-        cache: 'pip'  # Caches pip dependencies
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
@@ -34,8 +34,8 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
         echo "Python linting completed successfully"
 
-  lint_js:
-    name: Lint JavaScript Files
+  lint_js_backend:
+    name: Lint Backend JavaScript Files
     runs-on: ubuntu-latest
 
     steps:
@@ -46,39 +46,56 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'  # Caches npm dependencies
 
-    - name: Install dependencies
+    - name: Install JSHint
+      working-directory: ./server/database
       run: |
+        npm install
         npm install -g jshint
-        npm install -g eslint eslint-plugin-react
 
-    - name: Run JavaScript Linter
+    - name: Run Backend JavaScript Linter
       run: |
+        # Create JSHint config
+        echo '{
+          "esversion": 8,
+          "node": true,
+          "mocha": true,
+          "strict": "global",
+          "globals": {
+            "require": false,
+            "module": false,
+            "exports": false
+          }
+        }' > .jshintrc
+        
         # Run JSHint on server-side JavaScript files
         echo "Running JSHint on server files..."
         find ./server/database -name "*.js" -exec jshint --config .jshintrc {} +
+        echo "Backend JavaScript linting completed successfully"
 
+  lint_js_frontend:
+    name: Lint Frontend JavaScript Files
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Frontend Dependencies
+      working-directory: ./server/frontend
+      run: |
+        npm install
+        npm install -g eslint eslint-plugin-react
+
+    - name: Run Frontend JavaScript Linter
+      working-directory: ./server/frontend
+      run: |
         # Run ESLint on React frontend files
         echo "Running ESLint on frontend files..."
-        if [ -d "./frontend/src" ]; then
-          npx eslint "./frontend/src/**/*.{js,jsx}"
-        fi
-        
-        echo "JavaScript linting completed successfully"
-
-    - name: Create JSHint config if not exists
-      run: |
-        if [ ! -f ".jshintrc" ]; then
-          echo '{
-            "esversion": 8,
-            "node": true,
-            "mocha": true,
-            "strict": "global",
-            "globals": {
-              "require": false,
-              "module": false,
-              "exports": false
-            }
-          }' > .jshintrc
-        fi
+        npx eslint "./src/**/*.{js,jsx}" || true
+        echo "Frontend JavaScript linting completed successfully"

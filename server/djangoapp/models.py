@@ -1,6 +1,14 @@
-from email.policy import default
+"""
+Models for Car Dealership Application
+
+This module defines the database models for the car dealership application.
+It includes two main models:
+
+1. CarMake: Represents a car manufacturer with details such as name, description, logo, website, and founded year.
+2. CarModel: Represents a car model with details such as name, type, year, and associated car make.
+"""
+
 from django.db import models
-from django.utils.timezone import now
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 CAR_TYPE_CHOICES = (
@@ -14,16 +22,14 @@ class CarMake(models.Model):
     name = models.CharField(
         max_length=100, null=False, blank=False, verbose_name="Car Make Name"
     )
-    description = models.TextField(
-        null=True, blank=True, verbose_name="Car Make Description"
-    )
+    description = models.TextField(blank=True, verbose_name="Car Make Description")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     logo_url = models.URLField(
-        max_length=200, null=True, blank=True, verbose_name="Brand Logo URL"
+        max_length=200, blank=True, verbose_name="Brand Logo URL"
     )
     website = models.URLField(
-        max_length=200, null=True, blank=True, verbose_name="Official Website"
+        max_length=200, blank=True, verbose_name="Official Website"
     )
     founded_year = models.PositiveIntegerField(
         null=True, blank=True, verbose_name="Founded Year"
@@ -48,14 +54,14 @@ class CarModel(models.Model):
         blank=False,
         verbose_name="Car Type",
         choices=CAR_TYPE_CHOICES,
-        default='SUV'
+        default="SUV",
     )
     year = models.PositiveIntegerField(
         null=False,
         blank=False,
         verbose_name="Car Year",
         validators=[MinValueValidator(2015), MaxValueValidator(2025)],
-        default=2025
+        default=2025,
     )
     maker = models.ForeignKey(
         CarMake, on_delete=models.CASCADE, verbose_name="Car Make"

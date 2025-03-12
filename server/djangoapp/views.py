@@ -56,8 +56,8 @@ def login_user(request):
             login(request, user)
             data = {"userName": username, "status": "Authenticated"}
         return JsonResponse(data, safe=True)
-    except:
-        logger.error("Failed to login user")
+    except Exception as e:
+        logger.error(f"Failed to login user: {str(e)}")
         return JsonResponse({"error": "Login failed"}, status=500)
 
 
@@ -221,13 +221,17 @@ def get_dealer_details(request, dealer_id):
             dealer = get_request(endpoint)
             if dealer is None:
                 logger.error("Failed to get dealer from backend")
-                return JsonResponse({"error": "Failed to get dealer", "status": 500}, status=500)
+                return JsonResponse(
+                    {"error": "Failed to get dealer", "status": 500}, status=500
+                )
 
             return JsonResponse({"status": 200, "dealer": dealer})
         raise BadRequest("Dealer not found")
     except Exception as e:
         logger.error(f"Error in get_dealer_details: {str(e)}")
-        return JsonResponse({"error": "Internal server error", "status": 500}, status=500)
+        return JsonResponse(
+            {"error": "Internal server error", "status": 500}, status=500
+        )
 
 
 def get_dealer_reviews(request, dealer_id):
@@ -253,7 +257,9 @@ def get_dealer_reviews(request, dealer_id):
             reviews = get_request(endpoint)
             if reviews is None:
                 logger.error("Failed to get reviews from backend")
-                return JsonResponse({"error": "Failed to get reviews", "status":500}, status=500)
+                return JsonResponse(
+                    {"error": "Failed to get reviews", "status": 500}, status=500
+                )
 
             for review in reviews:
 
@@ -279,7 +285,9 @@ def get_dealer_reviews(request, dealer_id):
         raise BadRequest("Reviews not found")
     except Exception as e:
         logger.error(f"Error in get_dealer_reviews: {str(e)}")
-        return JsonResponse({"error": "Internal server error", "status": 500}, status=500)
+        return JsonResponse(
+            {"error": "Internal server error", "status": 500}, status=500
+        )
 
 
 def add_review(request):
@@ -298,17 +306,21 @@ def add_review(request):
             Success: {"status": 200, "review": response}
             Error: {"error": error_message}
     """
-    if request.user.is_anonymous == False:
+    if not request.user.is_anonymous:
         data = json.loads(request.body)
         try:
             response = post_review("insert_review", data)
             if response is None:
                 logger.error("Failed to add review")
-                return JsonResponse({"error": "Failed to add review", "status": 500}, status=500)
+                return JsonResponse(
+                    {"error": "Failed to add review", "status": 500}, status=500
+                )
 
             return JsonResponse({"status": 200, "review": response})
         except Exception as e:
             logger.error(f"Error in add_review: {str(e)}")
-            return JsonResponse({"error": "Internal server error", "status": 500}, status=500)
+            return JsonResponse(
+                {"error": "Internal server error", "status": 500}, status=500
+            )
     else:
         return JsonResponse({"error": "Unauthorized", "status": 403}, status=403)

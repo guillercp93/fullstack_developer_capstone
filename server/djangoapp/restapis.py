@@ -1,3 +1,47 @@
+"""
+REST API Utilities for Car Dealership Application
+
+This module provides utility functions for making HTTP requests to both the
+backend API and sentiment analysis service. It handles all external API
+communication for the Django application.
+
+Key Features:
+1. GET Requests:
+   - get_request: Handles GET requests to backend API with query parameters
+   - analyze_review_sentiments: Calls sentiment analysis service for review text
+
+2. POST Requests:
+   - post_review: Handles POST requests to backend API with JSON data
+
+Configuration:
+- Uses environment variables for backend URLs:
+  - backend_url: Base URL for dealership backend API
+  - sentiment_analyzer_url: URL for sentiment analysis service
+
+Error Handling:
+- All functions include proper error handling and logging
+- Returns None for failed requests with detailed error logging
+- Implements request timeouts to prevent hanging
+
+Security:
+- Uses HTTPS for all external requests
+- Validates JSON responses before processing
+- Implements proper request headers and content types
+
+Example Usage:
+    # Get dealer reviews
+    reviews = get_request('fetchReviews', dealer_id=123)
+    
+    # Analyze review sentiment
+    sentiment = analyze_review_sentiments("Great service!")
+    
+    # Post new review
+    response = post_review('insert_review', {
+        'name': 'John',
+        'review': 'Great service!'
+    })
+"""
+
 import logging
 import os
 
