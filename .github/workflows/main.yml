@@ -68,9 +68,9 @@ jobs:
           }
         }' > .jshintrc
         
-        # Run JSHint on server-side JavaScript files
+        # Run JSHint on server-side JavaScript files, excluding node_modules
         echo "Running JSHint on server files..."
-        find ./server/database -name "*.js" -exec jshint --config .jshintrc {} +
+        find ./server/database -name "*.js" -not -path "*/node_modules/*" -exec jshint --config .jshintrc {} +
         echo "Backend JavaScript linting completed successfully"
 
   lint_js_frontend:
@@ -95,7 +95,7 @@ jobs:
     - name: Run Frontend JavaScript Linter
       working-directory: ./server/frontend
       run: |
-        # Run ESLint on React frontend files
+        # Run ESLint on React frontend files, excluding node_modules
         echo "Running ESLint on frontend files..."
-        npx eslint "./src/**/*.{js,jsx}" || true
+        npx eslint "./src/**/*.{js,jsx}" --ignore-pattern "node_modules/" || true
         echo "Frontend JavaScript linting completed successfully"
